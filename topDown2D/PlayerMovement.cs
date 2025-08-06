@@ -22,8 +22,6 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleAnimations()
     {
-        moveDirection = new Vector2(moveX, moveY).normalized;
-
         if (moveDirection.x > 0)
         {
             spriteRenderer.flipX = false;
@@ -33,7 +31,7 @@ public class PlayerMovement : MonoBehaviour
             spriteRenderer.flipX = true;
         }
 
-        if (moveX != 0 || moveY != 0)
+        if (moveDirection.x != 0 || moveDirection.y != 0)
         {
             animator.SetBool("isRunning", true);
         }
@@ -45,8 +43,11 @@ public class PlayerMovement : MonoBehaviour
 
     void ProcessInputs()
     {
+
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveY = Input.GetAxisRaw("Vertical");
+
+        moveDirection = new Vector2(moveX, moveY).normalized;
     }
 
     void Move()

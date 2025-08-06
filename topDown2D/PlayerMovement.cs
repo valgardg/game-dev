@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         ProcessInputs();
+        HandleAnimations();
     }
 
     void FixedUpdate()
@@ -19,12 +20,8 @@ public class PlayerMovement : MonoBehaviour
         Move();
     }
 
-    void ProcessInputs()
+    void HandleAnimations()
     {
-
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveY = Input.GetAxisRaw("Vertical");
-
         moveDirection = new Vector2(moveX, moveY).normalized;
 
         if (moveDirection.x > 0)
@@ -44,6 +41,12 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.SetBool("isRunning", false);
         }
+    }
+
+    void ProcessInputs()
+    {
+        float moveX = Input.GetAxisRaw("Horizontal");
+        float moveY = Input.GetAxisRaw("Vertical");
     }
 
     void Move()

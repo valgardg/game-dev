@@ -1,75 +1,75 @@
 using System.Collections;
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using Unity.VisualScripting;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance;
     public Jump playerJump;
-    public CheckPlayerInCrosshair checkPlayerInCrosshair;
-    public FollowPlayer crosshairFollowPlayer;
     public LevelText levelText;
+    public LevelLabel LevelLabel;
     public ScoreText scoreText;
     public GameOverPanel gameOverPanel;
 
-    public int ShotsBetweenIncrease = 5;
-    [SerializeField] private int shotIndex = 0;
     private int levelIndex = 1;
     private int playerScore = 0;
     private bool gameOver = false;
 
+    // LEVEL PROGRESSION
+    // progression will depend on number of *crosshair* shots fired
+    public int shotIndex = 0;
+    private int shotsToNextLevel = 1;
+    private int shotsToNextLevelIncrease = 1;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
     void Start()
     {
-        StartCoroutine(StartCrosshairLoop());
+        levelText.DisplayLevel(levelIndex, 0); // display initial level
     }
 
-    IEnumerator StartCrosshairLoop()
+    void Update()
     {
-        levelText.DisplayLevel(levelIndex);
-        yield return new WaitForSeconds(2.0f);
-        StartCoroutine(CrosshairLoop());
-    }
+        if (gameOver)
+            return;
 
-    IEnumerator CrosshairLoop()
-    {
-        while (!gameOver)
+        // Handle level progression through crosshair shots
+        if (shotIndex >= shotsToNextLevel)
         {
-            crosshairFollowPlayer.StartFollowPlayer();
-            yield return new WaitForSeconds(5f);
-
-
-            crosshairFollowPlayer.StopFollowPlayer();
-            bool playerInCrossHair = checkPlayerInCrosshair.GetPlayerInCrosshair();
-            
-            // first check if player was shot 
-            if(playerInCrossHair)
-            {
-                HandleGameOver();
-                break;
-            }
-
-            shotIndex++; // COUNT THE SHOT
-
-            // update game state after shot has been fired
-            if (shotIndex >= ShotsBetweenIncrease)
-            {
-                crosshairFollowPlayer.IncreaseSpeed();
-                shotIndex = 0;
-                levelIndex += 1;
-                AddScore(5);
-                levelText.DisplayLevel(levelIndex);
-            }
-
-            // Update player score only if they were not shot
-            AddScore(1);
-
-            yield return new WaitForSeconds(2f);
+            NewLevel();
+            shotIndex = 0;
+            shotsToNextLevel += shotsToNextLevelIncrease;
         }
+    }
+
+    private void NewLevel()
+    {
+        // Handle level info
+        levelIndex += 1;
+        int levelScore = 5;
+        AddScore(levelScore);
+        levelText.DisplayLevel(levelIndex, levelScore); // display level and score gained from level up
+        // update level label
+        LevelLabel.DisplayLevel(levelIndex);
+
+        // Call increase difficulty
+        CrosshairManager.Instance.IncreaseDifficulty();
+        FieldBulletSpawner.Instance.IncreaseDifficulty(levelIndex);
     }
 
     private void ReloadCurrentScene()
     {
-         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        StopAllCoroutines();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void AddScore(int scoreToAdd)
@@ -93,6 +93,16 @@ public class GameManager : MonoBehaviour
 
     public void CallHandleGameOver()
     {
-        HandleGameOver();
+        // HandleGameOver();
+    }
+
+    public bool GetGameOver()
+    {
+        return gameOver;
+    }
+
+    public void CallAddScore(int scoreToAdd)
+    {
+        AddScore(scoreToAdd);
     }
 }

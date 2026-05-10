@@ -22,7 +22,12 @@ public class ResumeManager : MonoBehaviour
     public void Initialize(GameTime gameTime)
     {
         this.gameTime = gameTime;
+        GameManager.OnGameStart += InitializeResumes;
+        GameManager.OnGameRestart += InitializeResumes;
+    }
 
+    private void InitializeResumes()
+    {
         LoadApplicantPool();
         GetNextResume();
 
@@ -31,6 +36,7 @@ public class ResumeManager : MonoBehaviour
             Debug.Log(traitCount.Key + ": " + traitCount.Value);
         }
     }
+
     public void InitializeApplicantResume()
     {
         if (currentApplicantSO == null)
